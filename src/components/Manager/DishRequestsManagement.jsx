@@ -1,56 +1,60 @@
 import { useState } from "react";
-import { 
-  Clock, 
-  CheckCircle, 
-  XCircle, 
+import {
+  Clock,
+  CheckCircle,
+  XCircle,
   UtensilsCrossed,
   User,
   Calendar,
   AlertCircle,
-  Filter
+  Filter,
 } from "lucide-react";
 
-export default function DishRequestsManagement({ requests, onApproveRequest, onRejectRequest }) {
-  const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+export default function DishRequestsManagement({
+  requests,
+  onApproveRequest,
+  onRejectRequest,
+}) {
+  const [filter, setFilter] = useState("all"); // all, pending, approved, rejected
 
-  const filteredRequests = requests.filter(request => {
-    if (filter === 'all') return true;
+  const filteredRequests = requests.filter((request) => {
+    if (filter === "all") return true;
     return request.status === filter;
   });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending':
-        return 'from-yellow-500 to-orange-500';
-      case 'approved':
-        return 'from-green-500 to-emerald-500';
-      case 'rejected':
-        return 'from-red-500 to-rose-500';
+      case "pending":
+        return "from-yellow-500 to-orange-500";
+      case "approved":
+        return "from-green-500 to-emerald-500";
+      case "rejected":
+        return "from-red-500 to-rose-500";
       default:
-        return 'from-gray-500 to-gray-600';
+        return "from-gray-500 to-gray-600";
     }
   };
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'pending':
-        return 'Chờ duyệt';
-      case 'approved':
-        return 'Đã duyệt';
-      case 'rejected':
-        return 'Từ chối';
+      case "pending":
+        return "Chờ duyệt";
+      case "approved":
+        return "Đã duyệt";
+      case "rejected":
+        return "Từ chối";
       default:
-        return 'Không xác định';
+        return "Không xác định";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return Clock;
-      case 'approved':
+      case "approved":
         return CheckCircle;
-      case 'rejected':
+      case "rejected":
         return XCircle;
       default:
         return AlertCircle;
@@ -76,26 +80,40 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-6">
         {[
-          { key: 'all', label: 'Tất cả', count: requests.length },
-          { key: 'pending', label: 'Chờ duyệt', count: requests.filter(r=> r.status === 'pending').length },
-          { key: 'approved', label: 'Đã duyệt', count: requests.filter(r=> r.status === 'approved').length },
-          { key: 'rejected', label: 'Từ chối', count: requests.filter(r=> r.status === 'rejected').length }
-        ].map(tab => (
+          { key: "all", label: "Tất cả", count: requests.length },
+          {
+            key: "pending",
+            label: "Chờ duyệt",
+            count: requests.filter((r) => r.status === "pending").length,
+          },
+          {
+            key: "approved",
+            label: "Đã duyệt",
+            count: requests.filter((r) => r.status === "approved").length,
+          },
+          {
+            key: "rejected",
+            label: "Từ chối",
+            count: requests.filter((r) => r.status === "rejected").length,
+          },
+        ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-300 ${
               filter === tab.key
-                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md'
-                : 'bg-white/80 text-neutral-600 hover:bg-white hover:text-neutral-900'
+                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md"
+                : "bg-white/80 text-neutral-600 hover:bg-white hover:text-neutral-900"
             }`}
           >
             <span>{tab.label}</span>
-            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-              filter === tab.key
-                ? 'bg-white/20 text-white'
-                : 'bg-orange-100 text-orange-600'
-            }`}>
+            <span
+              className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                filter === tab.key
+                  ? "bg-white/20 text-white"
+                  : "bg-orange-100 text-orange-600"
+              }`}
+            >
               {tab.count}
             </span>
           </button>
@@ -103,14 +121,17 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
       </div>
 
       {/* Summary Alert */}
-      {requests.filter(r=> r.status === 'pending').length > 0 && (
+      {requests.filter((r) => r.status === "pending").length > 0 && (
         <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-4 mb-6 border border-orange-200">
           <div className="flex items-center gap-3 mb-2">
             <AlertCircle className="h-5 w-5 text-orange-600" />
-            <h4 className="font-semibold text-neutral-900">Yêu cầu mới cần duyệt</h4>
+            <h4 className="font-semibold text-neutral-900">
+              Yêu cầu mới cần duyệt
+            </h4>
           </div>
           <p className="text-sm text-neutral-600">
-            Chef đã gửi {requests.filter(r => r.status === 'pending').length} yêu cầu thay đổi số lượng món ăn vào ngày hôm nay
+            Chef đã gửi {requests.filter((r) => r.status === "pending").length}{" "}
+            yêu cầu thay đổi số lượng món ăn vào ngày hôm nay
           </p>
         </div>
       )}
@@ -123,7 +144,9 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
               <Filter className="h-8 w-8 text-gray-400" />
             </div>
             <p className="text-neutral-500 font-medium">
-              {filter === 'all' ? 'Không có yêu cầu nào' : `Không có yêu cầu ${getStatusText(filter)}`}
+              {filter === "all"
+                ? "Không có yêu cầu nào"
+                : `Không có yêu cầu ${getStatusText(filter)}`}
             </p>
             <p className="text-sm text-neutral-400 mt-1">
               Yêu cầu từ Chef sẽ hiển thị ở đây
@@ -139,7 +162,11 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${getStatusColor(request.status)} rounded-lg flex items-center justify-center`}>
+                    <div
+                      className={`w-12 h-12 bg-gradient-to-br ${getStatusColor(
+                        request.status,
+                      )} rounded-lg flex items-center justify-center`}
+                    >
                       <StatusIcon className="h-6 w-6 text-white" />
                     </div>
                     <div>
@@ -148,12 +175,16 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
                         <User className="h-4 w-4 text-neutral-400" />
-                        <span className="text-sm text-neutral-600">{request.chefName}</span>
+                        <span className="text-sm text-neutral-600">
+                          {request.chefName}
+                        </span>
                       </div>
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getStatusColor(request.status)} text-white`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getStatusColor(
+                      request.status,
+                    )} text-white`}
                   >
                     {getStatusText(request.status)}
                   </span>
@@ -163,29 +194,41 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
                   <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-200">
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className={`h-4 w-4 text-blue-600`} />
-                      <span className="text-sm font-medium text-blue-800">Ngày gửi</span>
+                      <span className="text-sm font-medium text-blue-800">
+                        Ngày gửi
+                      </span>
                     </div>
-                    <p className="font-semibold text-blue-900">{request.date}</p>
+                    <p className="font-semibold text-blue-900">
+                      {request.date}
+                    </p>
                   </div>
                   <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-3 border border-orange-200">
                     <div className="flex items-center gap-2 mb-1">
                       <UtensilsCrossed className={`h-4 w-4 text-orange-600`} />
-                      <span className="text-sm font-medium text-orange-800">Số lượng yêu cầu</span>
+                      <span className="text-sm font-medium text-orange-800">
+                        Số lượng yêu cầu
+                      </span>
                     </div>
-                    <p className="font-semibold text-orange-900">{request.requestedQuantity}</p>
+                    <p className="font-semibold text-orange-900">
+                      {request.requestedQuantity}
+                    </p>
                   </div>
                   <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className={`h-4 w-4 text-gray-600`} />
-                      <span className="text-sm font-medium text-gray-800">Thời gian</span>
+                      <span className="text-sm font-medium text-gray-800">
+                        Thời gian
+                      </span>
                     </div>
                     <p className="font-semibold text-gray-900">
-                      {new Date(request.createdAt || Date.now()).toLocaleTimeString('vi-VN')}
+                      {new Date(
+                        request.createdAt || Date.now(),
+                      ).toLocaleTimeString("vi-VN")}
                     </p>
                   </div>
                 </div>
 
-                {request.status === 'pending' && (
+                {request.status === "pending" && (
                   <div className="flex gap-3 pt-4 border-t border-neutral-100">
                     <button
                       onClick={() => onApproveRequest(request.id)}
@@ -204,16 +247,21 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
                   </div>
                 )}
 
-                {request.status !== 'pending' && (
+                {request.status !== "pending" && (
                   <div className="pt-4 border-t border-neutral-100">
                     <div className="flex items-center gap-2 text-sm">
                       <StatusIcon className="h-4 w-4" />
-                      <span className={
-                        request.status === 'approved' 
-                          ? 'text-green-600 font-medium' 
-                          : 'text-red-600 font-medium'
-                      }>
-                        Yêu cầu đã được {request.status === 'approved' ? 'phê duyệt' : 'từ chối'}
+                      <span
+                        className={
+                          request.status === "approved"
+                            ? "text-green-600 font-medium"
+                            : "text-red-600 font-medium"
+                        }
+                      >
+                        Yêu cầu đã được{" "}
+                        {request.status === "approved"
+                          ? "phê duyệt"
+                          : "từ chối"}
                       </span>
                     </div>
                   </div>
@@ -228,30 +276,30 @@ export default function DishRequestsManagement({ requests, onApproveRequest, onR
       <div className="mt-6 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[
-            { 
-              label: 'Tổng yêu cầu', 
-              value: requests.length, 
-              color: 'text-gray-700',
-              icon: UtensilsCrossed
+            {
+              label: "Tổng yêu cầu",
+              value: requests.length,
+              color: "text-gray-700",
+              icon: UtensilsCrossed,
             },
-            { 
-              label: 'Chờ duyệt', 
-              value: requests.filter(r => r.status === 'pending').length, 
-              color: 'text-yellow-700',
-              icon: Clock
+            {
+              label: "Chờ duyệt",
+              value: requests.filter((r) => r.status === "pending").length,
+              color: "text-yellow-700",
+              icon: Clock,
             },
-            { 
-              label: 'Đã duyệt', 
-              value: requests.filter(r=> r.status === 'approved').length, 
-              color: 'text-green-700',
-              icon: CheckCircle
+            {
+              label: "Đã duyệt",
+              value: requests.filter((r) => r.status === "approved").length,
+              color: "text-green-700",
+              icon: CheckCircle,
             },
-            { 
-              label: 'Từ chối', 
-              value: requests.filter(r => r.status === 'rejected').length, 
-              color: 'text-red-700',
-              icon: XCircle
-            }
+            {
+              label: "Từ chối",
+              value: requests.filter((r) => r.status === "rejected").length,
+              color: "text-red-700",
+              icon: XCircle,
+            },
           ].map((stat, index) => {
             const IconComponent = stat.icon;
             return (

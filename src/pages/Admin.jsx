@@ -5,7 +5,7 @@ import AdminCharts from "../components/Admin/AdminCharts";
 import AdminInvoices from "../components/Admin/Invoices";
 import AdminAccountManagement from "../components/Admin/AccountManagement";
 import AdminEditAccountModal from "../components/Admin/EditAccountModal";
-import AdminDishesManagement from "../components/Admin/DishesManagement";
+import AdminDishesManagement from "../components/Manager/DishesManagement";
 import AdminEditDishModal from "../components/Admin/EditDishModal";
 
 import {
