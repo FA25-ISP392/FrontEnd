@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash2, Package } from "lucide-react";
-import AdminDishForm from "../Admin/AdminDishForm";
 import { listDish, deleteDish, normalizeDish } from "../../lib/apiDish";
 
 export default function DishesManagement({
@@ -191,7 +190,7 @@ export default function DishesManagement({
 
       {/* Modal thêm món ăn */}
       {openCreate && (
-        <AdminDishForm
+        <ManagerDishForm
           open={openCreate}
           onClose={() => setOpenCreate(false)}
           onCreated={(newDish) => {

@@ -4,17 +4,18 @@ import StatsCards from "../components/Manager/StatsCards";
 import Charts from "../components/Manager/Charts";
 import TablesManagement from "../components/Manager/TablesManagement";
 import AccountManagement from "../components/Manager/AccountManagement";
-import DishRequestsManagement from "../components/Manager/DishRequestsManagement";
 import ManagerInvoicesToday from "../components/Manager/InvoicesToday";
-import DishesStockVisibility from "../components/Manager/DishesStockVisibility";
 import TableDetailsModal from "../components/Manager/TableDetailsModal";
+import EditDishModal from "../components/Manager/EditDishModal";
+import EditToppingModal from "../components/Manager/Topping/EditToppingModal";
+import ToppingsManagement from "../components/Manager/Topping/ToppingManagement";
+import ManagerDishPage from "../components/Manager/Dish/ManagerDishPage";
+
 import {
-  mockDishes,
   mockTables,
   mockRevenueData,
   mockPopularDishes,
 } from "../lib/managerData";
-import { getDishRequests, updateDishRequest } from "../lib/dishRequestsData";
 
 import {
   updateStaff,
@@ -28,17 +29,30 @@ import { findStaffByUsername } from "../lib/apiStaff";
 import ManagerEditAccountModal from "../components/Manager/EditAccountModal";
 
 export default function Manager() {
+  // 🧩 State chung
   const [managerName, setManagerName] = useState("");
   const [activeSection, setActiveSection] = useState("overview");
   const [revenuePeriod, setRevenuePeriod] = useState("day");
+
+  // 🧩 State tài khoản nhân viên
   const [isEditingAccount, setIsEditingAccount] = useState(false);
+  const [deletingIds, setDeletingIds] = useState(new Set());
+
+  // 🧩 State bàn ăn
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [tables, setTables] = useState(mockTables);
+
+  // 🧩 State món ăn
+  const [dishes, setDishes] = useState([]);
   const [isEditingDish, setIsEditingDish] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [selectedTable, setSelectedTable] = useState(null);
-  const [dishes, setDishes] = useState(mockDishes);
-  const [tables, setTables] = useState(mockTables);
-  const [dishRequests, setDishRequests] = useState(getDishRequests());
-  const [deletingIds, setDeletingIds] = useState(new Set());
+
+  //Hàm lưu món ăn sau khi chỉnh sửa (cập nhật trong danh sách dishes)
+  const saveDish = (updatedDish) => {
+    setDishes((prev) =>
+      prev.map((dish) => (dish.id === updatedDish.id ? updatedDish : dish)),
+    );
+  };
 
   useEffect(() => {
     const loadName = async () => {
@@ -82,7 +96,6 @@ export default function Manager() {
     totalPages: 1,
     totalElements: 0,
   });
-
   useEffect(() => {
     if (activeSection === "accounts") setPage(1);
   }, [activeSection]);
@@ -107,7 +120,7 @@ export default function Manager() {
       } catch (err) {
         if (!cancelled)
           setAccountsError(
-            err.message || "Không tải được danh sách nhân viên."
+            err.message || "Không tải được danh sách nhân viên.",
           );
       } finally {
         if (!cancelled) setLoadingAccounts(false);
@@ -153,7 +166,7 @@ export default function Manager() {
       const response = await updateStaff(staffId, payload);
       const updated = normalizeStaff(response?.result ?? response);
       setAccounts((prev) =>
-        prev.map((arr) => (arr.id === staffId ? { ...arr, ...updated } : arr))
+        prev.map((arr) => (arr.id === staffId ? { ...arr, ...updated } : arr)),
       );
     } catch (err) {
       const data = err?.response?.data || err?.data || {};
@@ -175,7 +188,7 @@ export default function Manager() {
   const deleteAccount = async (staffId) => {
     if (!staffId) return;
     const targetDelete = accounts.find(
-      (arr) => Number(arr.staffId) === Number(staffId)
+      (arr) => Number(arr.staffId) === Number(staffId),
     );
     if (!targetDelete) return;
     const me = getCurrentUser() || {};
@@ -227,28 +240,24 @@ export default function Manager() {
   // Calculate totals
   const totalRevenue = mockRevenueData.reduce(
     (sum, item) => sum + item.revenue,
-    0
+    0,
   );
   const totalAccounts = accounts.length;
   const totalDishes = dishes.length;
   const totalTables = tables.length;
 
+  //Topping
+  const [toppings, setToppings] = useState([]);
+  const [isEditingTopping, setIsEditingTopping] = useState(false);
+  const [editingTopping, setEditingTopping] = useState(null);
+
+  // Hàm cập nhật trạng thái đơn hàng cho bàn
   const updateOrderStatus = (tableId, updatedOrder) => {
     setTables((prevTables) =>
       prevTables.map((table) =>
-        table.id === tableId ? { ...table, currentOrder: updatedOrder } : table
-      )
+        table.id === tableId ? { ...table, currentOrder: updatedOrder } : table,
+      ),
     );
-  };
-
-  const handleApproveRequest = (requestId) => {
-    updateDishRequest(requestId, { status: "approved" });
-    setDishRequests(getDishRequests());
-  };
-
-  const handleRejectRequest = (requestId) => {
-    updateDishRequest(requestId, { status: "rejected" });
-    setDishRequests(getDishRequests());
   };
 
   const renderContent = () => {
@@ -298,14 +307,10 @@ export default function Manager() {
       case "dishes":
         return (
           <div className="space-y-6">
-            <DishRequestsManagement
-              requests={dishRequests}
-              onApproveRequest={handleApproveRequest}
-              onRejectRequest={handleRejectRequest}
-            />
-            <DishesStockVisibility dishes={dishes} />
+            <ManagerDishPage />
           </div>
         );
+
       case "invoices":
         return (
           <ManagerInvoicesToday
@@ -328,6 +333,17 @@ export default function Manager() {
             </p>
           </div>
         );
+      case "toppings":
+        return (
+          <ToppingsManagement
+            toppings={toppings}
+            setToppings={setToppings}
+            setIsEditingTopping={setIsEditingTopping}
+            setEditingItem={setEditingTopping}
+            loading={false}
+          />
+        );
+
       default:
         return null;
     }
@@ -371,6 +387,20 @@ export default function Manager() {
         saveAccount={updateAccount}
         setDeletingIds={deletingIds}
         accounts={accounts}
+      />
+      <EditDishModal
+        isEditingDish={isEditingDish}
+        setIsEditingDish={setIsEditingDish}
+        editingItem={editingItem}
+        setEditingItem={setEditingItem}
+        saveDish={saveDish}
+      />
+      <EditToppingModal
+        isEditingTopping={isEditingTopping}
+        setIsEditingTopping={setIsEditingTopping}
+        editingItem={editingTopping}
+        setEditingItem={setEditingTopping}
+        setToppings={setToppings}
       />
     </div>
   );

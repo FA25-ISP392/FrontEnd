@@ -6,6 +6,7 @@ import {
   Table,
   Settings,
   LogOut,
+  Salad, // 🥗 thêm icon cho topping
 } from "lucide-react";
 
 const sidebarItems = [
@@ -13,6 +14,8 @@ const sidebarItems = [
   { id: "tables", label: "Quản Lý Bàn", icon: Table },
   { id: "accounts", label: "Tài Khoản", icon: Users },
   { id: "dishes", label: "Món Ăn", icon: Package },
+  // 🟩 Thêm mục mới: Topping
+  { id: "toppings", label: "Topping", icon: Salad },
   { id: "invoices", label: "Hóa Đơn", icon: FileText },
 ];
 

@@ -2,8 +2,8 @@ import axios from "axios";
 import { getToken } from "../lib/auth";
 
 const USE_PROXY = import.meta.env.DEV;
-// const BASE_HOT = "https://api-monngon88.purintech.id.vn";
-const BASE_HOT = "https://backend2-production-00a1.up.railway.app";
+const BASE_HOT = "https://api-monngon88.purintech.id.vn";
+// const BASE_HOT = "https://backend-production-0865.up.railway.app";
 const API_PREFIX = "/isp392";
 const PROXY_PREFIX = "/api";
 
@@ -59,7 +59,7 @@ apiConfig.interceptors.response.use(
     wrapped.data = data;
     wrapped.url = error?.config?.url;
     return Promise.reject(wrapped);
-  }
+  },
 );
 
 export default apiConfig;
