@@ -12,7 +12,7 @@ import apiConfig from "../api/apiConfig";
 export async function listDishTopping() {
   const token = localStorage.getItem("token");
   try {
-    const res = await apiConfig.get("/dish-topping", {
+    const res = await apiConfig.get("api/dish-topping", {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res;
@@ -38,7 +38,7 @@ export async function addDishToppingsBatch(dishId, toppingIds = []) {
 
     console.log("📦 Gửi batch dish-topping:", payload);
 
-    const res = await apiConfig.post("/dish-topping", payload, {
+    const res = await apiConfig.post("api/dish-topping", payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
