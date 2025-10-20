@@ -4,6 +4,8 @@ import OrdersManagement from "../components/Chef/OrdersManagement";
 import DishQuantityManagement from "../components/Chef/DishQuantityManagement";
 import { mockChefOrders, mockChefDishes } from "../lib/chefData";
 import { getCurrentUser } from "../lib/auth";
+import ChefDailyPlan from "../components/Chef/ChefDailyPlan";
+import ChefDailyDishes from "../components/Chef/ChefDailyDishes";
 
 export default function Chef() {
   const [chefName, setChefName] = useState("");
@@ -82,6 +84,11 @@ export default function Chef() {
             onSubmitRequest={submitDishRequest}
           />
         );
+      case "dailyPlan":
+        return <ChefDailyPlan />;
+      case "dailyDishes":
+        return <ChefDailyDishes />;
+
       case "invoices":
         return (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">

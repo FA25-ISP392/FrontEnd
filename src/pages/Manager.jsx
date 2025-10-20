@@ -3,19 +3,20 @@ import ManagerSidebar from "../components/Manager/ManagerSidebar";
 import StatsCards from "../components/Manager/StatsCards";
 import Charts from "../components/Manager/Charts";
 import TablesManagement from "../components/Manager/TablesManagement";
-import BookingManagement from "../components/Manager/BookingManagement";
-import DishRequestsManagement from "../components/Manager/DishRequestsManagement";
+import AccountManagement from "../components/Manager/AccountManagement";
 import ManagerInvoicesToday from "../components/Manager/InvoicesToday";
-import DishesStockVisibility from "../components/Manager/DishesStockVisibility";
 import TableDetailsModal from "../components/Manager/TableDetailsModal";
-import TableLayout from "../components/Manager/TableLayout";
+import EditDishModal from "../components/Manager/EditDishModal";
+import EditToppingModal from "../components/Manager/Topping/EditToppingModal";
+import ToppingsManagement from "../components/Manager/Topping/ToppingManagement";
+import ManagerDishPage from "../components/Manager/Dish/ManagerDishPage";
+import ManagerDailyPlan from "../components/Manager/ManagerDailyPlan";
+
 import {
-  mockDishes,
   mockTables,
   mockRevenueData,
   mockPopularDishes,
 } from "../lib/managerData";
-import { getDishRequests, updateDishRequest } from "../lib/dishRequestsData";
 import {
   listBookingsPaging,
   approveBooking,
@@ -29,34 +30,30 @@ import { listTables } from "../lib/apiTable";
 import { approveBookingWithTable } from "../lib/apiBooking";
 
 export default function Manager() {
+  // 🧩 State chung
   const [managerName, setManagerName] = useState("");
   const [activeSection, setActiveSection] = useState("overview");
   const [revenuePeriod, setRevenuePeriod] = useState("day");
-  const [isEditingBooking, setIsEditingBooking] = useState(false);
+
+  // 🧩 State tài khoản nhân viên
+  const [isEditingAccount, setIsEditingAccount] = useState(false);
+  const [deletingIds, setDeletingIds] = useState(new Set());
+
+  // 🧩 State bàn ăn
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [tables, setTables] = useState(mockTables);
+
+  // 🧩 State món ăn
+  const [dishes, setDishes] = useState([]);
   const [isEditingDish, setIsEditingDish] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [selectedTable, setSelectedTable] = useState(null);
-  const [dishes, setDishes] = useState(mockDishes);
-  const [tables, setTables] = useState([]);
-  const [dishRequests, setDishRequests] = useState(getDishRequests());
-  const [deletingIds, setDeletingIds] = useState(new Set());
-  const [savingBooking, setSavingBooking] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("ALL");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await listTables();
-        if (!cancelled) setTables(data);
-      } catch (err) {
-        console.error("Load tables failed:", err);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  //Hàm lưu món ăn sau khi chỉnh sửa (cập nhật trong danh sách dishes)
+  const saveDish = (updatedDish) => {
+    setDishes((prev) =>
+      prev.map((dish) => (dish.id === updatedDish.id ? updatedDish : dish)),
+    );
+  };
 
   useEffect(() => {
     const loadName = async () => {
@@ -113,7 +110,6 @@ export default function Manager() {
     totalPages: 1,
     totalElements: 0,
   });
-
   useEffect(() => {
     if (activeSection === "accounts") setPage(1);
   }, [activeSection]);
@@ -137,7 +133,9 @@ export default function Manager() {
         }
       } catch (err) {
         if (!cancelled)
-          setBookingsError(err.message || "Không tải được danh sách đặt bàn.");
+          setAccountsError(
+            err.message || "Không tải được danh sách nhân viên.",
+          );
       } finally {
         if (!cancelled) setLoadingBookings(false);
       }
@@ -163,16 +161,58 @@ export default function Manager() {
     }
   };
 
-  const handleApprove = async (booking) => {
-    const id = typeof booking === "object" ? booking.id : booking;
-    setBookings((prev) =>
-      prev.map((x) => (x.id === id ? { ...x, status: "APPROVED" } : x))
+  const updateAccount = async (data) => {
+    const staffId = data?.staffId ?? data?.id;
+    if (!staffId) return;
+
+    const payload = [
+      "fullName",
+      "email",
+      "phone",
+      "dob",
+      "role",
+      "password",
+    ].reduce((object, key) => {
+      let value = data[key];
+      if (value === "" || value === undefined || value === null) return object;
+      if (key === "role") value = String(value).toUpperCase();
+      object[key] = value;
+      return object;
+    }, {});
+
+    try {
+      const response = await updateStaff(staffId, payload);
+      const updated = normalizeStaff(response?.result ?? response);
+      setAccounts((prev) =>
+        prev.map((arr) => (arr.id === staffId ? { ...arr, ...updated } : arr)),
+      );
+    } catch (err) {
+      const data = err?.response?.data || err?.data || {};
+      const list = data?.result || data?.errors || data?.fieldErrors || [];
+      const message =
+        (Array.isArray(list) &&
+          list
+            .map((arrs) => arrs?.defaultMessage || arrs?.message)
+            .filter(Boolean)
+            .join(" | ")) ||
+        data?.message ||
+        err.message ||
+        "Cập nhật thất bại.";
+      alert(message);
+      throw err;
+    }
+  };
+
+  const deleteAccount = async (staffId) => {
+    if (!staffId) return;
+    const targetDelete = accounts.find(
+      (arr) => Number(arr.staffId) === Number(staffId),
     );
     try {
       await approveBooking(id);
     } catch (error) {
       setBookings((prev) =>
-        prev.map((x) => (x.id === id ? { ...x, status: "PENDING" } : x))
+        prev.map((x) => (x.id === id ? { ...x, status: "PENDING" } : x)),
       );
       alert(error.message || "Duyệt thất bại");
     }
@@ -180,13 +220,13 @@ export default function Manager() {
 
   const handleReject = async (id) => {
     setBookings((prev) =>
-      prev.map((x) => (x.id === id ? { ...x, status: "REJECT" } : x))
+      prev.map((x) => (x.id === id ? { ...x, status: "REJECT" } : x)),
     );
     try {
       await rejectBooking(id); // gọi endpoint /booking/{id}/reject
     } catch (err) {
       setBookings((prev) =>
-        prev.map((x) => (x.id === id ? { ...x, status: "PENDING" } : x))
+        prev.map((x) => (x.id === id ? { ...x, status: "PENDING" } : x)),
       );
       alert(err.message || "Từ chối thất bại");
     }
@@ -196,7 +236,7 @@ export default function Manager() {
     try {
       setSavingBooking(true);
       setBookings((prev) =>
-        prev.map((x) => (x.id === id ? { ...x, seat, bookingDate } : x))
+        prev.map((x) => (x.id === id ? { ...x, seat, bookingDate } : x)),
       );
       await updateBooking(id, { seat, bookingDate });
       await refetchBookings();
@@ -216,52 +256,24 @@ export default function Manager() {
 
   const totalRevenue = mockRevenueData.reduce(
     (sum, item) => sum + item.revenue,
-    0
+    0,
   );
   const totalBookings = bookings.length;
   const totalDishes = dishes.length;
   const totalTables = tables.length;
 
+  //Topping
+  const [toppings, setToppings] = useState([]);
+  const [isEditingTopping, setIsEditingTopping] = useState(false);
+  const [editingTopping, setEditingTopping] = useState(null);
+
+  // Hàm cập nhật trạng thái đơn hàng cho bàn
   const updateOrderStatus = (tableId, updatedOrder) => {
     setTables((prevTables) =>
       prevTables.map((table) =>
-        table.id === tableId ? { ...table, currentOrder: updatedOrder } : table
-      )
+        table.id === tableId ? { ...table, currentOrder: updatedOrder } : table,
+      ),
     );
-  };
-
-  const handleApproveRequest = (requestId) => {
-    updateDishRequest(requestId, { status: "approved" });
-    setDishRequests(getDishRequests());
-  };
-
-  const handleRejectRequest = (requestId) => {
-    updateDishRequest(requestId, { status: "rejected" });
-    setDishRequests(getDishRequests());
-  };
-
-  const handleAssignTable = async (bookingId, tableId) => {
-    try {
-      await approveBookingWithTable(bookingId, tableId);
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === bookingId
-            ? { ...b, status: "APPROVED", assignedTableId: tableId }
-            : b
-        )
-      );
-      setTables((prev) =>
-        prev.map((t) =>
-          t.id === tableId
-            ? { ...t, status: "reserved", isAvailable: false }
-            : t
-        )
-      );
-      console.log(`Đã gán booking ${bookingId} cho bàn ${tableId}`);
-    } catch (error) {
-      console.error("Lỗi khi gán bàn:", error);
-      throw error;
-    }
   };
 
   const renderContent = () => {
@@ -329,14 +341,12 @@ export default function Manager() {
       case "dishes":
         return (
           <div className="space-y-6">
-            <DishRequestsManagement
-              requests={dishRequests}
-              onApproveRequest={handleApproveRequest}
-              onRejectRequest={handleRejectRequest}
-            />
-            <DishesStockVisibility dishes={dishes} />
+            <ManagerDishPage />
           </div>
         );
+      case "dailyPlan":
+        return <ManagerDailyPlan />;
+
       case "invoices":
         return (
           <ManagerInvoicesToday
@@ -359,6 +369,17 @@ export default function Manager() {
             </p>
           </div>
         );
+      case "toppings":
+        return (
+          <ToppingsManagement
+            toppings={toppings}
+            setToppings={setToppings}
+            setIsEditingTopping={setIsEditingTopping}
+            setEditingItem={setEditingTopping}
+            loading={false}
+          />
+        );
+
       default:
         return null;
     }
@@ -401,6 +422,20 @@ export default function Manager() {
         }}
         onSave={handleSaveEdit}
         saving={savingBooking}
+      />
+      <EditDishModal
+        isEditingDish={isEditingDish}
+        setIsEditingDish={setIsEditingDish}
+        editingItem={editingItem}
+        setEditingItem={setEditingItem}
+        saveDish={saveDish}
+      />
+      <EditToppingModal
+        isEditingTopping={isEditingTopping}
+        setIsEditingTopping={setIsEditingTopping}
+        editingItem={editingTopping}
+        setEditingItem={setEditingTopping}
+        setToppings={setToppings}
       />
     </div>
   );
