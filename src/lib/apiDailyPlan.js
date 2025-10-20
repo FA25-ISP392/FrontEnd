@@ -91,6 +91,7 @@ export async function createDailyPlan(payload) {
 export async function createDailyPlansBatch(listPayload = []) {
   const user = getCurrentUser() || {};
   const staffId = user?.staffId ?? user?.id;
+  if (!staffId) throw new Error("Không tìm thấy staffId trong token!");
 
   const body = listPayload.map((p) => ({
     itemId: Number(p.itemId),
@@ -141,8 +142,6 @@ export async function rejectDailyPlan(planId) {
   return updateDailyPlan(planId, { status: false });
 }
 
-/* ========================= DELETE ========================= */
-
 /**
  * ❌ Xoá kế hoạch (Manager từ chối xoá luôn record)
  * Nếu BE chưa có DELETE /daily-plans/{id} → dùng rejectDailyPlan() thay thế
@@ -158,4 +157,17 @@ export async function deleteDailyPlan(planId) {
     );
     return rejectDailyPlan(planId);
   }
+}
+
+export async function approveAllDailyPlans(plans = []) {
+  const results = [];
+  for (const p of plans) {
+    try {
+      const res = await updateDailyPlan(p.planId, { status: true });
+      results.push(res);
+    } catch (err) {
+      console.error(`❌ Lỗi duyệt ${p.planId}:`, err);
+    }
+  }
+  return results;
 }

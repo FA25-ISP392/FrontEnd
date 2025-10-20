@@ -63,7 +63,7 @@ export function getRolesArray(decoded) {
   return arr.filter(Boolean).map((r) =>
     String(r)
       .replace(/^ROLE_/i, "")
-      .toUpperCase()
+      .toUpperCase(),
   );
 }
 
@@ -91,6 +91,31 @@ export function isAuthenticated() {
   return true;
 }
 
+// export async function apiLogin({ username, password }) {
+//   const data = await apiConfig.post("/auth/token", { username, password });
+
+//   const token = data?.token;
+//   const authenticated = data?.authenticated ?? true;
+
+//   if (!token || authenticated === false) {
+//     throw new Error("Xác thực thất bại. Vui lòng thử lại.");
+//   }
+
+//   const decoded = parseJWT(token);
+//   const role = getRoleFromToken(decoded) || "STAFF";
+
+//   let profile = null;
+//   try {
+//     profile = await findStaffByUsername(username);
+//   } catch {}
+
+//   return {
+//     token,
+//     role,
+//     user: profile ? profile : { username, fullName: username },
+//   };
+// }
+
 export async function apiLogin({ username, password }) {
   const data = await apiConfig.post("/auth/token", { username, password });
 
@@ -109,11 +134,20 @@ export async function apiLogin({ username, password }) {
     profile = await findStaffByUsername(username);
   } catch {}
 
-  return {
-    token,
-    role,
-    user: profile ? profile : { username, fullName: username },
-  };
+  const user = profile
+    ? profile
+    : {
+        username,
+        fullName: username,
+        id: decoded?.id ?? decoded?.staffId ?? decoded?.userId ?? null,
+        staffId: decoded?.staffId ?? decoded?.id ?? null,
+        role,
+      };
+
+  // ✅ Lưu session để getCurrentUser() có thể đọc được
+  saveSession({ token: `Bearer ${token}`, user });
+
+  return { token, role, user };
 }
 
 export async function apiLoginCustomer({ username, password }) {

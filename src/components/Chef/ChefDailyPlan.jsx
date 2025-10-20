@@ -2,28 +2,27 @@ import { useState, useEffect } from "react";
 import { listDish } from "../../lib/apiDish";
 import {
   listDailyPlans,
-  createDailyPlan,
-  updateDailyPlan,
+  createDailyPlansBatch,
   ITEM_TYPES,
 } from "../../lib/apiDailyPlan";
 import { getCurrentUser } from "../../lib/auth";
-import { Plus, Minus, Send, Pencil, Clock } from "lucide-react";
+import { Plus, Minus, Send, Clock } from "lucide-react";
 
 export default function ChefDailyPlan() {
   const [dishes, setDishes] = useState([]);
   const [plans, setPlans] = useState([]);
   const [quantities, setQuantities] = useState({});
-  const [loadingId, setLoadingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // ✅ Lấy ngày hôm nay theo giờ Việt Nam (Asia/Ho_Chi_Minh)
+  // ✅ Lấy ngày hiện tại theo giờ Việt Nam
   const today = new Date().toLocaleDateString("en-CA", {
     timeZone: "Asia/Ho_Chi_Minh",
   });
-
   const user = getCurrentUser();
   const staffId = user?.staffId || user?.id;
 
-  // 🧩 Load danh sách món ăn + kế hoạch hôm nay
+  // 🧩 Load danh sách món + kế hoạch hôm nay
   useEffect(() => {
     (async () => {
       try {
@@ -35,13 +34,13 @@ export default function ChefDailyPlan() {
         const todayPlans = planList.filter(
           (p) => p.planDate === today && p.staffId === staffId,
         );
-
         const mapped = {};
         todayPlans.forEach((p) => (mapped[p.itemId] = p.plannedQuantity));
 
         setDishes(dishList);
         setPlans(todayPlans);
         setQuantities(mapped);
+        if (todayPlans.length > 0) setIsSubmitted(true);
       } catch (err) {
         console.error("❌ Lỗi khi tải kế hoạch:", err);
       }
@@ -63,53 +62,44 @@ export default function ChefDailyPlan() {
     setQuantities((prev) => ({ ...prev, [dishId]: parsed }));
   };
 
-  // 🧩 Gửi hoặc chỉnh sửa kế hoạch
-  const handleSubmitOrEdit = async (dishId) => {
-    const qty = quantities[dishId] || 0;
-    if (qty <= 0) return alert("Vui lòng chọn số lượng hợp lệ!");
-    setLoadingId(dishId);
+  // 🧩 Gửi tất cả món 1 lần
+  const handleSubmitAll = async () => {
+    const selected = Object.entries(quantities)
+      .filter(([_, qty]) => qty > 0)
+      .map(([dishId, qty]) => ({
+        itemId: Number(dishId),
+        itemType: ITEM_TYPES.DISH,
+        plannedQuantity: qty,
+        planDate: today,
+        staffId,
+      }));
 
+    if (selected.length === 0) {
+      alert("Vui lòng chọn ít nhất 1 món có số lượng > 0!");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const existing = plans.find((p) => p.itemId === dishId);
-
-      if (existing) {
-        // 🟡 Cập nhật (ghi đè)
-        await updateDailyPlan(existing.planId, {
-          plannedQuantity: qty,
-          remainingQuantity: qty,
-        });
-        alert("✅ Đã cập nhật yêu cầu thành công!");
-      } else {
-        // 🟢 Tạo mới kế hoạch
-        await createDailyPlan({
-          itemId: dishId,
-          itemType: ITEM_TYPES.DISH,
-          plannedQuantity: qty,
-          planDate: today,
-          staffId,
-        });
-        alert("✅ Đã gửi yêu cầu thành công!");
-      }
-
-      // Reload lại dữ liệu sau khi gửi
-      const refreshed = await listDailyPlans();
-      setPlans(
-        refreshed.filter((p) => p.planDate === today && p.staffId === staffId),
-      );
+      await createDailyPlansBatch(selected);
+      alert("✅ Đã gửi kế hoạch tổng! Đang chờ duyệt...");
+      setIsSubmitted(true);
     } catch (err) {
-      console.error("❌", err);
-      alert("Lỗi khi gửi yêu cầu, vui lòng thử lại!");
+      console.error("❌ Lỗi gửi kế hoạch tổng:", err);
+      alert("Gửi kế hoạch thất bại!");
     } finally {
-      setLoadingId(null);
+      setLoading(false);
     }
   };
 
-  // 🧩 Xác định trạng thái từng món
-  const getPlanState = (dishId) => {
-    const plan = plans.find((p) => p.itemId === dishId);
-    if (!plan) return "none";
-    if (plan.status) return "approved";
-    return "pending";
+  // 🧩 Kiểm tra món đã gửi (đang chờ duyệt)
+  const isPending = (dishId) => {
+    return plans.some((p) => p.itemId === dishId && !p.status);
+  };
+
+  // 🧩 Kiểm tra món đã được duyệt
+  const isApproved = (dishId) => {
+    return plans.some((p) => p.itemId === dishId && p.status);
   };
 
   return (
@@ -118,23 +108,20 @@ export default function ChefDailyPlan() {
         Lên Kế Hoạch Trong Ngày
       </h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {dishes.map((dish) => {
-          const planState = getPlanState(dish.id);
           const qty = quantities[dish.id] || 0;
-
-          // Ẩn món đã được duyệt (đã phê duyệt)
-          if (planState === "approved") return null;
-
-          const isEditing = planState === "pending";
-          const buttonLabel = isEditing ? "Chỉnh sửa yêu cầu" : "Gửi yêu cầu";
+          const disabled = loading || isSubmitted || isApproved(dish.id);
 
           return (
             <div
               key={dish.id}
-              className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300"
+              className={`rounded-xl p-4 border shadow-sm ${
+                isApproved(dish.id)
+                  ? "bg-green-50 border-green-200"
+                  : "bg-white border-gray-100"
+              }`}
             >
-              {/* Tên món */}
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-semibold text-neutral-900">{dish.name}</h4>
                 <span className="text-xs text-neutral-500">
@@ -142,14 +129,13 @@ export default function ChefDailyPlan() {
                 </span>
               </div>
 
-              {/* Nhập số lượng */}
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">Số lượng:</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleQuantityChange(dish.id, -1)}
-                    disabled={loadingId === dish.id}
-                    className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center hover:bg-red-200"
+                    disabled={disabled}
+                    className="w-8 h-8 bg-red-100 text-red-600 rounded-lg flex items-center justify-center hover:bg-red-200 disabled:opacity-40"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
@@ -161,46 +147,29 @@ export default function ChefDailyPlan() {
                     onChange={(e) =>
                       handleQuantityInput(dish.id, e.target.value)
                     }
-                    className="w-14 text-center font-semibold border rounded-lg border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                    disabled={loadingId === dish.id}
+                    disabled={disabled}
+                    className="w-14 text-center font-semibold border rounded-lg border-gray-300 text-gray-900 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:bg-gray-100 disabled:text-gray-500"
                   />
 
                   <button
                     onClick={() => handleQuantityChange(dish.id, 1)}
-                    disabled={loadingId === dish.id}
-                    className="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center hover:bg-green-200"
+                    disabled={disabled}
+                    className="w-8 h-8 bg-green-100 text-green-600 rounded-lg flex items-center justify-center hover:bg-green-200 disabled:opacity-40"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
-              {/* Nút gửi yêu cầu */}
-              <button
-                onClick={() => handleSubmitOrEdit(dish.id)}
-                disabled={loadingId === dish.id}
-                className={`w-full py-2 rounded-xl text-white font-medium transition-all ${
-                  isEditing
-                    ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                    : "bg-gradient-to-r from-blue-500 to-cyan-500"
-                }`}
-              >
-                {loadingId === dish.id ? (
-                  <span>Đang xử lý...</span>
-                ) : isEditing ? (
-                  <>
-                    <Pencil className="inline h-4 w-4 mr-1" /> {buttonLabel}
-                  </>
-                ) : (
-                  <>
-                    <Send className="inline h-4 w-4 mr-1" /> {buttonLabel}
-                  </>
-                )}
-              </button>
+              {isApproved(dish.id) && (
+                <div className="text-green-600 text-sm flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Đã được duyệt</span>
+                </div>
+              )}
 
-              {/* Hiển thị trạng thái chờ duyệt */}
-              {isEditing && (
-                <div className="mt-2 flex items-center gap-2 text-blue-600 text-sm">
+              {isPending(dish.id) && (
+                <div className="text-blue-600 text-sm flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   <span>Đang chờ phê duyệt...</span>
                 </div>
@@ -209,6 +178,22 @@ export default function ChefDailyPlan() {
           );
         })}
       </div>
+
+      {!isSubmitted && (
+        <button
+          onClick={handleSubmitAll}
+          disabled={loading}
+          className="w-full py-3 rounded-xl text-white font-semibold text-lg bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90 transition-all"
+        >
+          {loading ? (
+            "Đang gửi kế hoạch..."
+          ) : (
+            <>
+              <Send className="inline w-5 h-5 mr-2" /> Gửi kế hoạch tổng
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
 }

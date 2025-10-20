@@ -317,7 +317,7 @@ export default function Admin() {
         setDeletingIds={deletingIds}
         accounts={accounts}
       />
-      <AdminEditDishModal
+      {/* <AdminEditDishModal
         isEditingDish={isEditingDish}
         setIsEditingDish={setIsEditingDish}
         editingItem={editingItem}
@@ -331,7 +331,7 @@ export default function Admin() {
             );
           }
         }}
-      />
+      /> */}
     </div>
   );
 }
