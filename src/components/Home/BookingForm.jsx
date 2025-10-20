@@ -80,14 +80,23 @@ export default function BookingForm({
   return (
     <div>
       <RestaurantTableLayout />
-      
-      {/* Thông báo đăng nhập */}
+
       {!isLoggedIn && (
         <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
-              <svg className="h-5 w-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="h-5 w-5 text-orange-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
             </div>
             <div className="flex-1">
@@ -109,7 +118,12 @@ export default function BookingForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className={`space-y-4 ${!isLoggedIn ? 'opacity-50 pointer-events-none' : ''}`}>
+      <form
+        onSubmit={handleSubmit}
+        className={`space-y-4 ${
+          !isLoggedIn ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Ngày đặt bàn
@@ -186,7 +200,9 @@ export default function BookingForm({
             <option value="8">Bàn 8 (8 người)</option>
           </select>
           {fieldErrs.preferredTable && (
-            <p className="text-xs text-red-600 mt-1">{fieldErrs.preferredTable}</p>
+            <p className="text-xs text-red-600 mt-1">
+              {fieldErrs.preferredTable}
+            </p>
           )}
         </div>
 
@@ -197,7 +213,6 @@ export default function BookingForm({
           Đặt Bàn
         </button>
       </form>
-
     </div>
   );
 }

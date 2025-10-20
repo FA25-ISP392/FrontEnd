@@ -151,8 +151,18 @@ export default function BookingManagement({
             </h3>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <svg className="h-4 w-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                <svg
+                  className="h-4 w-4 text-orange-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
                 </svg>
                 <span className="text-sm font-medium text-neutral-700">
                   Lọc theo trạng thái:
@@ -160,11 +170,37 @@ export default function BookingManagement({
               </div>
               <div className="flex items-center gap-2">
                 {[
-                  { value: "ALL", label: "Tất Cả", color: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200", activeColor: "bg-neutral-600 text-white" },
-                  { value: "PENDING", label: "Chờ Duyệt", color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200", activeColor: "bg-yellow-500 text-white" },
-                  { value: "APPROVED", label: "Chấp Nhận", color: "bg-green-100 text-green-700 hover:bg-green-200", activeColor: "bg-green-500 text-white" },
-                  { value: "REJECTED", label: "Từ Chối", color: "bg-red-100 text-red-700 hover:bg-red-200", activeColor: "bg-red-500 text-white" },
-                  { value: "CANCELLED", label: "Đã Hủy", color: "bg-gray-100 text-gray-700 hover:bg-gray-200", activeColor: "bg-gray-500 text-white" }
+                  {
+                    value: "ALL",
+                    label: "Tất Cả",
+                    color:
+                      "bg-neutral-100 text-neutral-700 hover:bg-neutral-200",
+                    activeColor: "bg-neutral-600 text-white",
+                  },
+                  {
+                    value: "PENDING",
+                    label: "Chờ Duyệt",
+                    color: "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
+                    activeColor: "bg-yellow-500 text-white",
+                  },
+                  {
+                    value: "APPROVED",
+                    label: "Chấp Nhận",
+                    color: "bg-green-100 text-green-700 hover:bg-green-200",
+                    activeColor: "bg-green-500 text-white",
+                  },
+                  {
+                    value: "REJECTED",
+                    label: "Từ Chối",
+                    color: "bg-red-100 text-red-700 hover:bg-red-200",
+                    activeColor: "bg-red-500 text-white",
+                  },
+                  {
+                    value: "CANCELLED",
+                    label: "Đã Hủy",
+                    color: "bg-gray-100 text-gray-700 hover:bg-gray-200",
+                    activeColor: "bg-gray-500 text-white",
+                  },
                 ].map((option) => (
                   <button
                     key={option.value}
@@ -326,23 +362,41 @@ export default function BookingManagement({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-orange-100 rounded-lg">
-                <svg className="h-4 w-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="h-4 w-4 text-orange-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <div className="text-sm text-neutral-700">
                 {totalElements > 0 ? (
                   <span>
-                    Hiển thị <span className="font-semibold text-orange-600">{from}</span> đến{" "}
-                    <span className="font-semibold text-orange-600">{to}</span> trong tổng số{" "}
-                    <span className="font-semibold text-orange-600">{totalElements}</span> đơn đặt bàn
+                    Hiển thị{" "}
+                    <span className="font-semibold text-orange-600">
+                      {from}
+                    </span>{" "}
+                    đến{" "}
+                    <span className="font-semibold text-orange-600">{to}</span>{" "}
+                    trong tổng số{" "}
+                    <span className="font-semibold text-orange-600">
+                      {totalElements}
+                    </span>{" "}
+                    đơn đặt bàn
                   </span>
                 ) : (
                   <span className="text-neutral-500">Không có dữ liệu</span>
                 )}
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onPageChange(Math.max(1, page - 1))}
@@ -353,16 +407,29 @@ export default function BookingManagement({
                     : "text-neutral-700 bg-white border border-neutral-300 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 shadow-sm"
                 }`}
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
                 Trước
               </button>
-              
+
               <div className="flex items-center gap-1">
                 {buildPages().map((p, i) =>
                   p === "…" ? (
-                    <span key={`e-${i}`} className="px-3 py-2 text-neutral-500 font-medium">
+                    <span
+                      key={`e-${i}`}
+                      className="px-3 py-2 text-neutral-500 font-medium"
+                    >
                       …
                     </span>
                   ) : (
@@ -380,7 +447,7 @@ export default function BookingManagement({
                   )
                 )}
               </div>
-              
+
               <button
                 onClick={() =>
                   onPageChange(Math.min(pageInfo.totalPages || 1, page + 1))
@@ -393,8 +460,18 @@ export default function BookingManagement({
                 }`}
               >
                 Sau
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>

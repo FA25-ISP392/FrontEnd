@@ -37,7 +37,7 @@ export const normalizeTable = (t = {}) => {
 };
 
 export async function listTables() {
-  const res = await apiConfig.get("/api/tables");
+  const res = await apiConfig.get("/tables");
   const list = Array.isArray(res)
     ? res
     : Array.isArray(res?.result)
@@ -52,6 +52,6 @@ export async function listTables() {
 }
 
 export async function getTable(id) {
-  const res = await apiConfig.get(`/api/tables/${id}`);
+  const res = await apiConfig.get(`/tables/${id}`);
   return normalizeTable(Array.isArray(res) ? res[0] : res);
 }

@@ -21,23 +21,34 @@ export async function createBooking({ date, time, guests, preferredTable }) {
 export const normalizeBooking = (b = {}) => ({
   id: b.bookingId ?? b.id,
   customerId: b.customerId ?? b.customer?.id ?? null,
-  customerName: b.customerName ?? b.customer?.fullName ?? "",
-  phone: b.customerPhone ?? b.customer?.phone ?? "",
-  email: b.customerEmail ?? b.customer?.email ?? "",
-  seat: b.seat ?? b.guestCount ?? 1,
+  customerName: b.customerName ?? "",
+  phone: b.customerPhone ?? "",
+  email: b.customerEmail ?? "",
+  seat: b.seat ?? 1,
   bookingDate: normalizeISOFromAPI(b.bookingDate),
-  createdAt: b.createdAt ?? b.created_at ?? null,
-  preferredTable: b.preferredTable ?? b.wantTable ?? b.wanttable ?? "",
-  assignedTableId:
-    b.assignedTableId ??
-    b.tableId ??
-    b.tableID ??
-    b.table_id ??
-    b.table?.id ??
-    b.table?.tableId ??
-    null,
-  status: String(b.status || "PENDING").toUpperCase(),
+  createdAt: b.createdAt ?? null,
+  preferredTable: b.wantTable ?? "",
+  assignedTableId: b.tableId ?? null,
+  status: normalizeStatus(b.status),
 });
+
+function normalizeStatus(u) {
+  const s = String(u || "PENDING").toUpperCase();
+  if (s === "REJECT") return "REJECTED";
+  if (s === "APPROVE") return "APPROVED";
+  if (s === "CANCEL" || s === "CANCELED") return "CANCELLED";
+  return s;
+}
+
+function mapFilterStatusForAPI(u) {
+  const s = String(u || "ALL").toUpperCase();
+  if (s === "ALL") return "ALL";
+  if (s === "REJECTED" || s === "REJECT") return "REJECT";
+  if (s === "APPROVED" || s === "APPROVE") return "APPROVED";
+  if (["CANCELLED", "CANCELED", "CANCEL"].includes(s)) return "CANCEL";
+  if (s === "PENDING") return "PENDING";
+  return s;
+}
 
 function normalizeStatusFilter(status) {
   if (!status) return "ALL";
@@ -160,5 +171,40 @@ export async function listBookingsByTableDate(tableId, date) {
     ? res.content
     : [];
 
+  return list.map(normalizeBooking);
+}
+
+export async function cancelBooking(id) {
+  if (!id) throw new Error("Thiếu bookingId.");
+  const res = await apiConfig.put(`/booking/${id}/cancel`, {});
+  return normalizeBooking(res?.result ?? res);
+}
+
+export async function updateBooking1(id, payload) {
+  const rawSeat = parseInt(payload.guests, 10) || 1;
+  const seat = Math.max(1, Math.min(8, rawSeat));
+  const bookingDate =
+    payload.bookingDate ||
+    (payload.date ? buildISOFromVN(payload.date, payload.time) : null);
+  const body = {
+    seat,
+    bookingDate,
+    ...(payload.wantTable ? { wantTable: Number(payload.wantTable) } : {}),
+  };
+
+  const res = await apiConfig.put(`/booking/${id}`, body);
+  return normalizeBooking(res?.result ?? res);
+}
+
+export async function getBookingHistory(customerId) {
+  if (!customerId) throw new Error("Thiếu customerId.");
+  const res = await apiConfig.get(`/booking/customer/${customerId}`);
+  const list = Array.isArray(res)
+    ? res
+    : Array.isArray(res?.result)
+    ? res.result
+    : Array.isArray(res?.content)
+    ? res.content
+    : [];
   return list.map(normalizeBooking);
 }

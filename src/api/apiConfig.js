@@ -62,6 +62,9 @@ import { getToken } from "../lib/auth";
 const USE_PROXY = import.meta.env.DEV;
 const BASE_API =
   import.meta.env.VITE_API_BASE || "https://api-monngon88.purintech.id.vn";
+//   import.meta.env.VITE_API_BASE || "https://backend2-production-00a1.up.railway.app";
+// import.meta.env.VITE_API_BASE ||
+// "https://backend-production-0865.up.railway.app";
 const API_PREFIX = import.meta.env.VITE_API_PREFIX || "/isp392";
 const PROXY_PREFIX = "/api";
 
@@ -78,8 +81,6 @@ apiConfig.interceptors.request.use((config) => {
   const token = raw ? String(raw).replace(/^Bearer\s+/i, "") : "";
   const url = String(config.url || "");
   const method = String(config.method || "get").toLowerCase();
-
-  // public: auth flow + tạo customer (đăng ký)
   const isOauthPublic =
     /\/auth\/(google|success|login|register|callback)(\/|$)?/i.test(url);
   const isPublicCustomerCreate =
