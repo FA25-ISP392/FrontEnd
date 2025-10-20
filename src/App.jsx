@@ -1,3 +1,4 @@
+// App.jsx
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "./layout/MainLayout.jsx";
 import Login from "./pages/Login.jsx";
@@ -13,12 +14,11 @@ import "./App.css";
 export default function App() {
   return (
     <Routes>
-      {/* Routes without layout */}
       <Route path="/" element={<Login />} />
       <Route path="/menu" element={<Menu />} />
-      <Route path="/home" element={<Home />} />
+      <Route path="/home/*" element={<Home />} />
+      <Route path="*" element={<Home />} />
 
-      {/* Protected Routes with MainLayout */}
       <Route
         path="/staff"
         element={

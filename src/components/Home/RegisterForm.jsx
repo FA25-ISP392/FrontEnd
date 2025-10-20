@@ -70,11 +70,6 @@ export default function RegisterForm({ onSwitchToLogin }) {
       errs.password = "Mật khẩu phải từ 8–30 ký tự.";
     } else if (/\s/.test(cleaned.password)) {
       errs.password = "Mật khẩu không được chứa khoảng trắng.";
-    } else if (
-      !/[A-Za-z]/.test(cleaned.password) ||
-      !/\d/.test(cleaned.password)
-    ) {
-      errs.password = "Nên có cả chữ và số để tăng độ mạnh.";
     }
 
     if (cleaned.confirmPassword !== cleaned.password) {

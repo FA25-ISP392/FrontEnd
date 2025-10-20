@@ -58,7 +58,6 @@
 import axios from "axios";
 import { getToken } from "../lib/auth";
 
-// --- Base URL: proxy khi DEV, domain thật khi PROD ---
 const USE_PROXY = import.meta.env.DEV;
 const BASE_API =
   import.meta.env.VITE_API_BASE || "https://api-monngon88.purintech.id.vn";
@@ -79,7 +78,6 @@ apiConfig.interceptors.request.use((config) => {
   const url = String(config.url || "");
   const method = String(config.method || "get").toLowerCase();
 
-  // public: auth flow + tạo customer (đăng ký)
   const isOauthPublic =
     /\/auth\/(google|success|login|register|callback)(\/|$)?/i.test(url);
   const isPublicCustomerCreate =
@@ -99,20 +97,16 @@ apiConfig.interceptors.response.use(
     if (res.status === 204) return null;
     const d = res.data ?? {};
 
-    // Các format có mã code/result
     if (d?.code === 0 || d?.code === 1000) return d.result ?? d;
     if (d?.token || d?.accessToken || d?.id_token) return d;
     if (d?.result?.token || d?.result?.accessToken || d?.result?.id_token)
       return d.result;
 
-    // Trường hợp backend trả mảng/obj thuần -> trả thẳng
     if (Array.isArray(d)) return d;
     if (d && typeof d === "object") return d;
 
-    // String token kiểu đặc biệt
     if (typeof d === "string" && d.length > 20) return { token: d };
 
-    // Còn lại: báo lỗi
     throw new Error(d?.message || "Yêu cầu thất bại.");
   },
   (error) => {
@@ -123,13 +117,14 @@ apiConfig.interceptors.response.use(
           .map((e) => e?.defaultMessage || e?.message || JSON.stringify(e))
           .join(" | ")
       : data?.message || "Không thể kết nối server.";
+
     const wrapped = new Error(detailedMsg);
     wrapped.response = error.response;
     wrapped.status = error?.response?.status;
     wrapped.data = data;
     wrapped.url = error?.config?.url;
     return Promise.reject(wrapped);
-  },
+  }
 );
 
 export default apiConfig;

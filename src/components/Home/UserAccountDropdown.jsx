@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { User, LogOut, Edit3, Lock, ChevronDown, X } from "lucide-react";
+import {
+  User,
+  LogOut,
+  Edit3,
+  Lock,
+  ChevronDown,
+  X,
+  History,
+} from "lucide-react";
 import EditAccountModal from "./EditAccountModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 
@@ -7,6 +15,11 @@ export default function UserAccountDropdown({
   isLoggedIn,
   userInfo,
   onLogout,
+  onBookingHistoryClick,
+  onEditAccountClick,
+  onChangePasswordClick,
+  onCloseEditAccount,
+  onCloseChangePassword,
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
@@ -17,10 +30,17 @@ export default function UserAccountDropdown({
   const handleEditAccount = () => {
     setIsEditAccountOpen(true);
     setIsDropdownOpen(false);
+    onEditAccountClick();
   };
 
   const handleChangePassword = () => {
     setIsChangePasswordOpen(true);
+    setIsDropdownOpen(false);
+    onChangePasswordClick();
+  };
+
+  const handleBookingHistory = () => {
+    onBookingHistoryClick();
     setIsDropdownOpen(false);
   };
 
@@ -91,6 +111,14 @@ export default function UserAccountDropdown({
                 <Lock className="w-4 h-4 text-gray-500" />
                 <span className="text-gray-700 text-sm">Đổi mật khẩu</span>
               </button>
+
+              <button
+                onClick={handleBookingHistory}
+                className="w-full flex items-center gap-3 p-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <History className="w-4 h-4 text-gray-500" />
+                <span className="text-gray-700 text-sm">Lịch sử đặt bàn</span>
+              </button>
             </div>
 
             <div className="p-2 border-t border-gray-100">
@@ -108,13 +136,19 @@ export default function UserAccountDropdown({
 
       <EditAccountModal
         isOpen={isEditAccountOpen}
-        onClose={() => setIsEditAccountOpen(false)}
+        onClose={() => {
+          setIsEditAccountOpen(false);
+          onCloseEditAccount();
+        }}
         userInfo={userInfo}
       />
 
       <ChangePasswordModal
         isOpen={isChangePasswordOpen}
-        onClose={() => setIsChangePasswordOpen(false)}
+        onClose={() => {
+          setIsChangePasswordOpen(false);
+          onCloseChangePassword();
+        }}
         userInfo={userInfo}
       />
     </>
