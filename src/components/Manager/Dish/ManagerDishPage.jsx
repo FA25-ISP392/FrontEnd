@@ -464,7 +464,11 @@ export default function ManagerDishPage() {
     setSaving(true);
 
     try {
-      const id = editing.id || editing.dishId;
+      // 🧩 Lấy id món ăn (dùng dishId nếu có, fallback sang id)
+      const id = editing.dishId || editing.id;
+      if (!id) throw new Error("Không tìm thấy ID món ăn để cập nhật!");
+
+      // 🧾 Payload gửi lên API update món
       const payload = {
         dishName: form.dishName || editing.name,
         description: form.description,
@@ -475,19 +479,45 @@ export default function ManagerDishPage() {
         isAvailable: Boolean(form.isAvailable),
       };
 
+      console.log("🟠 Gửi update dish:", payload);
+
+      // 🧠 Gọi API update món
       const updated = await updateDish(id, payload);
       const norm = normalizeDish(updated);
 
-      // 🟢 Chỉ gọi batch để cập nhật topping (không xoá thủ công)
-      await addDishToppingsBatch(id, form.toppings || []);
+      // 🧩 In ra topping để kiểm tra
+      console.log(
+        "🧩 Gửi batch topping cho dishId:",
+        id,
+        "với:",
+        form.toppings,
+      );
 
+      // 🟢 Gọi API batch topping (nếu có topping)
+      if (Array.isArray(form.toppings) && form.toppings.length > 0) {
+        await addDishToppingsBatch(id, form.toppings);
+        console.log("✅ Batch topping thành công");
+      } else {
+        console.log("⚪ Không có topping để cập nhật, bỏ qua batch");
+      }
+
+      // ✅ Cập nhật state UI
       alert("✅ Cập nhật món ăn và topping thành công!");
       setDishes((prev) => prev.map((x) => (x.id === norm.id ? norm : x)));
       setOpenEdit(false);
       setEditing(null);
     } catch (e) {
       console.error("❌ Lỗi khi cập nhật món ăn:", e);
-      alert("❌ Lưu món ăn không thành công!");
+      if (e.response) {
+        console.error("🔴 Response từ backend:", e.response.data);
+        alert(
+          `❌ Backend báo lỗi ${e.response.status}: ${
+            e.response.data?.message || "Không xác định"
+          }`,
+        );
+      } else {
+        alert("❌ Lưu món ăn không thành công!");
+      }
     } finally {
       setSaving(false);
     }

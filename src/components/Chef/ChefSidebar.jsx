@@ -1,9 +1,15 @@
-import { BarChart3, Package, FileText, ChefHat } from "lucide-react";
+import {
+  BarChart3,
+  ChefHat,
+  ClipboardList,
+  CalendarCheck2,
+} from "lucide-react";
 
 const sidebarItems = [
   { id: "overview", label: "Tổng Quan", icon: BarChart3 },
   { id: "orders", label: "Đơn Hàng", icon: ChefHat },
-  { id: "dishes", label: "Món Ăn", icon: Package },
+  { id: "dailyPlan", label: "Kế Hoạch Trong Ngày", icon: ClipboardList },
+  { id: "dailyDishes", label: "Món Trong Ngày", icon: CalendarCheck2 },
 ];
 
 export default function ChefSidebar({ activeSection, setActiveSection }) {

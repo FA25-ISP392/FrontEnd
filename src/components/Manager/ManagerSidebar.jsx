@@ -5,8 +5,8 @@ import {
   FileText,
   Table,
   Settings,
-  LogOut,
-  Salad, // 🥗 thêm icon cho topping
+  Salad,
+  ClipboardList,
 } from "lucide-react";
 
 const sidebarItems = [
@@ -14,8 +14,8 @@ const sidebarItems = [
   { id: "tables", label: "Quản Lý Bàn", icon: Table },
   { id: "accounts", label: "Tài Khoản", icon: Users },
   { id: "dishes", label: "Món Ăn", icon: Package },
-  // 🟩 Thêm mục mới: Topping
   { id: "toppings", label: "Topping", icon: Salad },
+  { id: "dailyPlan", label: "Kế Hoạch Trong Ngày", icon: ClipboardList }, // 🆕
   { id: "invoices", label: "Hóa Đơn", icon: FileText },
 ];
 

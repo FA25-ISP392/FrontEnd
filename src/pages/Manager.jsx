@@ -10,6 +10,7 @@ import EditDishModal from "../components/Manager/EditDishModal";
 import EditToppingModal from "../components/Manager/Topping/EditToppingModal";
 import ToppingsManagement from "../components/Manager/Topping/ToppingManagement";
 import ManagerDishPage from "../components/Manager/Dish/ManagerDishPage";
+import ManagerDailyPlan from "../components/Manager/ManagerDailyPlan";
 
 import {
   mockTables,
@@ -310,6 +311,8 @@ export default function Manager() {
             <ManagerDishPage />
           </div>
         );
+      case "dailyPlan":
+        return <ManagerDailyPlan />;
 
       case "invoices":
         return (
