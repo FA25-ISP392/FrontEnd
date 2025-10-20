@@ -83,6 +83,13 @@ export default function Home() {
     }
   }, [location.pathname, isLoggedIn, navigate]);
 
+  useEffect(() => {
+    const tableId = searchParams.get("tableId");
+    if (tableId && modal === "login") {
+      sessionStorage.setItem("currentTableId", tableId);
+    }
+  }, [searchParams, modal]);
+
   const resetToken = searchParams.get("token");
   const isResetOpen = Boolean(resetToken);
   const closeReset = () => {
@@ -124,6 +131,21 @@ export default function Home() {
   };
 
   const handleLoginSubmit = () => {
+    const tableId = sessionStorage.getItem("currentTableId");
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        const u = JSON.parse(raw);
+        const cid = u?.customerId ?? u?.id;
+        if (cid != null) sessionStorage.setItem("customerId", String(cid));
+      }
+    } catch (err) {}
+    if (tableId) {
+      sessionStorage.setItem("customerTableId", tableId);
+      navigate("/menu");
+      return;
+    }
+
     if (bookingDraft) {
       reloadBookingDraft();
       open(HOME_ROUTES.BOOKING);
